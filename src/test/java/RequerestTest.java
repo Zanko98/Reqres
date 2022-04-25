@@ -1,32 +1,35 @@
 import org.testng.annotations.Test;
 
 import static io.restassured.RestAssured.given;
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 public class RequerestTest {
 
     @Test
     public void listUsers(){
         given().
+                header("Content-type", "application/json").
         when().
                 get("https://reqres.in/api/users?page=2").
         then().
-                log().all().
                 statusCode(200);
     }
 
     @Test
     public void singleUser(){
         given().
+                header("Content-type", "application/json").
         when().
                 get("https://reqres.in/api/users/2").
         then().
-                log().all().
+                body(matchesJsonSchemaInClasspath("user.json")).
                 statusCode(200);
     }
 
     @Test
     public void listUsersNotFound(){
         given().
+                header("Content-type", "application/json").
         when().
                 get("https://reqres.in/api/users/23").
         then().
@@ -37,26 +40,30 @@ public class RequerestTest {
     @Test
     public void listResource(){
         given().
+                header("Content-type", "application/json").
         when().
                 get("https://reqres.in/api/unknown").
         then().
                 log().all().
-                statusCode(200);
+                statusCode(200).extract().response().asString();
     }
 
     @Test
-    public void singleUsers(){
+    public void singleResource(){
         given().
+                header("Content-type", "application/json").
         when().
                 get("https://reqres.in/api/unknown/2").
         then().
                 log().all().
+                body(matchesJsonSchemaInClasspath("resource.json")).
                 statusCode(200);
     }
 
     @Test
     public void singleResourceNotFound(){
         given().
+                header("Content-type", "application/json").
         when().
                 get("https://reqres.in/api/unknown/23").
         then().
@@ -71,6 +78,7 @@ public class RequerestTest {
                         "    \"name\": \"morpheus\",\n" +
                         "    \"job\": \"leader\"\n" +
                         "}").
+                header("Content-type", "application/json").
         when().
                 post("https://reqres.in/api/users").
         then().
@@ -85,6 +93,7 @@ public class RequerestTest {
                         "    \"name\": \"morpheus\",\n" +
                         "    \"job\": \"zion resident\"\n" +
                         "}").
+                header("Content-type", "application/json").
         when().
                 put("https://reqres.in/api/users/2").
         then().
@@ -99,6 +108,7 @@ public class RequerestTest {
                         "    \"name\": \"morpheus\",\n" +
                         "    \"job\": \"zion resident\"\n" +
                         "}").
+                header("Content-type", "application/json").
         when().
                 patch("https://reqres.in/api/users/2").
         then().
@@ -109,6 +119,7 @@ public class RequerestTest {
     @Test
     public void delete(){
         given().
+                header("Content-type", "application/json").
         when().
                 delete("https://reqres.in/api/users/2").
         then().
