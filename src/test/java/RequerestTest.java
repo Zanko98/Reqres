@@ -1,7 +1,10 @@
 import org.testng.annotations.Test;
 
-import static io.restassured.RestAssured.given;
+
+import static io.restassured.RestAssured.*;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsIterableContaining.hasItems;
 
 public class RequerestTest {
 
@@ -29,7 +32,6 @@ public class RequerestTest {
     @Test
     public void listUsersNotFound(){
         given().
-                header("Content-type", "application/json").
         when().
                 get("https://reqres.in/api/users/23").
         then().
@@ -45,7 +47,9 @@ public class RequerestTest {
                 get("https://reqres.in/api/unknown").
         then().
                 log().all().
-                statusCode(200).extract().response().asString();
+                statusCode(200).
+        body("data.id", hasItems(1, 2, 3, 4, 5, 6),
+                "support.text", equalTo("To keep ReqRes free, contributions towards server costs are appreciated!"));
     }
 
     @Test
@@ -63,7 +67,6 @@ public class RequerestTest {
     @Test
     public void singleResourceNotFound(){
         given().
-                header("Content-type", "application/json").
         when().
                 get("https://reqres.in/api/unknown/23").
         then().
@@ -78,7 +81,7 @@ public class RequerestTest {
                         "    \"name\": \"morpheus\",\n" +
                         "    \"job\": \"leader\"\n" +
                         "}").
-                header("Content-type", "application/json").
+                contentType("application/json").
         when().
                 post("https://reqres.in/api/users").
         then().
@@ -93,12 +96,13 @@ public class RequerestTest {
                         "    \"name\": \"morpheus\",\n" +
                         "    \"job\": \"zion resident\"\n" +
                         "}").
-                header("Content-type", "application/json").
+                contentType("application/json").
         when().
                 put("https://reqres.in/api/users/2").
         then().
                 log().all().
-                statusCode(200);
+                statusCode(200).
+        body("job", equalTo("zion resident"));
     }
 
     @Test
@@ -112,19 +116,20 @@ public class RequerestTest {
         when().
                 patch("https://reqres.in/api/users/2").
         then().
-                log().all().
+                log().ifError().
                 statusCode(200);
     }
 
     @Test
     public void delete(){
-        given().
+         given().
                 header("Content-type", "application/json").
         when().
                 delete("https://reqres.in/api/users/2").
         then().
                 log().all().
-                statusCode(204);
+                statusCode(204).
+                body(equalTo(""));
     }
 
     @Test
@@ -176,11 +181,13 @@ public class RequerestTest {
                 body("{\n" +
                         "    \"email\": \"peter@klaven\"\n" +
                         "}").
+                header("Content-type", "application/json").
         when().
                 post("https://reqres.in/api/login").
         then().
                 log().all().
-                statusCode(400);
+                statusCode(400).
+                body("error", equalTo("Missing password"));
     }
 
     @Test
